@@ -224,10 +224,10 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
+    <ResourceCompile Include="Engine.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Chili.ico" />
+    <Image Include="favicon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
