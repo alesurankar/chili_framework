@@ -17,8 +17,8 @@
 #pragma comment( lib,"mfuuid.lib" )
 #pragma comment( lib,"Propsys.lib" )
 
-#define CHILI_SOUND_API_EXCEPTION( hr,note ) SoundSystem::APIException( hr,_CRT_WIDE(__FILE__),__LINE__,note )
-#define CHILI_SOUND_FILE_EXCEPTION( filename,note ) SoundSystem::FileException( _CRT_WIDE(__FILE__),__LINE__,note,filename )
+#define My_SOUND_API_EXCEPTION( hr,note ) SoundSystem::APIException( hr,_CRT_WIDE(__FILE__),__LINE__,note )
+#define My_SOUND_FILE_EXCEPTION( filename,note ) SoundSystem::FileException( _CRT_WIDE(__FILE__),__LINE__,note,filename )
 
 SoundSystem& SoundSystem::Get()
 {
@@ -31,7 +31,7 @@ SoundSystem& SoundSystem::Get()
 	 HRESULT hr;
 	 if( FAILED( hr = Get().pMaster->SetVolume( vol ) ) )
 	 {
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Setting master volume" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Setting master volume" );
 	 }
  }
 
@@ -72,7 +72,7 @@ SoundSystem::XAudioDll::XAudioDll()
 				type = LoadType::Local;
 				break;
 			case LoadType::Local:
-				throw CHILI_SOUND_API_EXCEPTION(
+				throw My_SOUND_API_EXCEPTION(
 					HRESULT_FROM_WIN32( GetLastError() ),
 					std::wstring(
 						L"The XAudio2 DLL Could not be loaded. It is required that:\n"
@@ -144,7 +144,7 @@ SoundSystem::SoundSystem()
 		GetProcAddress( xaudio_dll,"DllGetClassObject" ) );
 	if( !DllGetClassObject )
 	{		
-		throw CHILI_SOUND_API_EXCEPTION( 
+		throw My_SOUND_API_EXCEPTION( 
 			HRESULT_FROM_WIN32( GetLastError() ),
 			L"Getting process address of 'DllGetClassObject' function" );
 	}
@@ -157,26 +157,26 @@ SoundSystem::SoundSystem()
 		IID_IClassFactory,
 		pClassFactory.ReleaseAndGetAddressOf() ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Creating factory for XAudio2 object" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Creating factory for XAudio2 object" );
 	}
 
 	// create the XAudio2 component object itself
 	if( FAILED( hr = pClassFactory->CreateInstance( nullptr,
 		__uuidof( IXAudio2 ),&pEngine ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Creating XAudio2 object" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Creating XAudio2 object" );
 	}
 
 	// initialize the XAudio2 component object
 	if( FAILED( hr = pEngine->Initialize( 0,XAUDIO2_DEFAULT_PROCESSOR ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Initializing XAudio2 object" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Initializing XAudio2 object" );
 	}
 
 	// create the mastering voice
 	if( FAILED( hr = pEngine->CreateMasteringVoice( &pMaster ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Creating mastering voice" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Creating mastering voice" );
 	}
 
 	// create channel objects
@@ -239,7 +239,7 @@ SoundSystem::Channel::Channel( SoundSystem & sys )
 	HRESULT hr;
 	if( FAILED( hr = sys.pEngine->CreateSourceVoice( &pSource,sys.format.get(),0u,2.0f,&vcb ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Creating source voice for channel" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Creating source voice for channel" );
 	}
 }
 
@@ -277,19 +277,19 @@ void SoundSystem::Channel::PlaySoundBuffer( Sound& s,float freqMod,float vol )
 	HRESULT hr;
 	if( FAILED( hr = pSource->SubmitSourceBuffer( xaBuffer.get(),nullptr ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Starting playback - submitting source buffer" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Starting playback - submitting source buffer" );
 	}
 	if( FAILED( hr = pSource->SetFrequencyRatio( freqMod ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Starting playback - setting frequency" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Starting playback - setting frequency" );
 	}
 	if( FAILED( hr = pSource->SetVolume( vol ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Starting playback - setting volume" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Starting playback - setting volume" );
 	}
 	if( FAILED( hr = pSource->Start() ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Starting playback - starting" );
+		throw My_SOUND_API_EXCEPTION( hr,L"Starting playback - starting" );
 	}
 }
 
@@ -377,20 +377,20 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 	wrl::ComPtr<IMFSourceReader> pReader;
 	if( FAILED( hr = MFCreateSourceReaderFromURL( fileName.c_str(),nullptr,&pReader ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"Creating MF Source Reader\nFilename: " + fileName );
+		throw My_SOUND_API_EXCEPTION( hr,L"Creating MF Source Reader\nFilename: " + fileName );
 	}
 
 	// selecting first stream
 	if( FAILED( hr = pReader->SetStreamSelection(
 		(DWORD)MF_SOURCE_READER_ALL_STREAMS,FALSE ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"setting stream selection all" );
+		throw My_SOUND_API_EXCEPTION( hr,L"setting stream selection all" );
 	}
 
 	if( FAILED( hr = pReader->SetStreamSelection(
 		(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,TRUE ) ) )
 	{
-		throw CHILI_SOUND_API_EXCEPTION( hr,L"setting stream selection first" );
+		throw My_SOUND_API_EXCEPTION( hr,L"setting stream selection first" );
 	}
 
 
@@ -402,17 +402,17 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 		// configuring partial type
 		if( FAILED( hr = MFCreateMediaType( &pPartialType ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"creating partial media type" );
+			throw My_SOUND_API_EXCEPTION( hr,L"creating partial media type" );
 		}
 
 		if( FAILED( hr = pPartialType->SetGUID( MF_MT_MAJOR_TYPE,MFMediaType_Audio ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"setting partial media type major guid" );
+			throw My_SOUND_API_EXCEPTION( hr,L"setting partial media type major guid" );
 		}
 
 		if( FAILED( hr = pPartialType->SetGUID( MF_MT_SUBTYPE,MFAudioFormat_PCM ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"setting partial media type sub guid" );
+			throw My_SOUND_API_EXCEPTION( hr,L"setting partial media type sub guid" );
 		}
 
 		// Set this type on the source reader. The source reader will
@@ -421,7 +421,7 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 				(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
 				nullptr,pPartialType.Get() ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"setting partial type on source reader" );
+			throw My_SOUND_API_EXCEPTION( hr,L"setting partial type on source reader" );
 		}
 
 		// Get the complete uncompressed format.
@@ -429,7 +429,7 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 				(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
 				&pUncompressedAudioType ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"getting complete uncompressed format" );
+			throw My_SOUND_API_EXCEPTION( hr,L"getting complete uncompressed format" );
 		}
 
 		// Ensure the stream is selected.
@@ -437,7 +437,7 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 				(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
 				TRUE ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"making sure stream is selected (who the fuck knows?)" );
+			throw My_SOUND_API_EXCEPTION( hr,L"making sure stream is selected (who the fuck knows?)" );
 		}
 	}
 
@@ -454,7 +454,7 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 			// loading format info into wave format structure (callee allocated, but we must free)
 			if( FAILED( hr = MFCreateWaveFormatExFromMFMediaType( pUncompressedAudioType.Get(),&pFormat,&cbFormat ) ) )
 			{
-				throw CHILI_SOUND_API_EXCEPTION( hr,L"loading format info into wave format structure" );
+				throw My_SOUND_API_EXCEPTION( hr,L"loading format info into wave format structure" );
 			}
 			return std::unique_ptr<WAVEFORMATEX,decltype(&CoTaskMemFree)>( pFormat,CoTaskMemFree );
 		}();
@@ -465,27 +465,27 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 
 			if( pFormat->nChannels != sysFormat.nChannels )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nChannels)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nChannels)" );
 			}
 			else if( pFormat->wBitsPerSample != sysFormat.wBitsPerSample )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (wBitsPerSample)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (wBitsPerSample)" );
 			}
 			else if( pFormat->nSamplesPerSec != sysFormat.nSamplesPerSec )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nSamplesPerSec)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nSamplesPerSec)" );
 			}
 			else if( pFormat->wFormatTag != sysFormat.wFormatTag )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (wFormatTag)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (wFormatTag)" );
 			}
 			else if( pFormat->nBlockAlign != sysFormat.nBlockAlign )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nBlockAlign)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nBlockAlign)" );
 			}
 			else if( pFormat->nAvgBytesPerSec != sysFormat.nAvgBytesPerSec )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nAvgBytesPerSec)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad decompressed wave format (nAvgBytesPerSec)" );
 			}
 		}
 
@@ -503,14 +503,14 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 			if( FAILED( hr = pReader->GetPresentationAttribute( MF_SOURCE_READER_MEDIASOURCE,
 				MF_PD_DURATION,&var ) ) )
 			{
-				throw CHILI_SOUND_API_EXCEPTION( hr,L"getting duration attribute from reader" );
+				throw My_SOUND_API_EXCEPTION( hr,L"getting duration attribute from reader" );
 			}
 
 			// getting int64 from duration prop variant
 			long long duration;
 			if( FAILED( hr = PropVariantToInt64( var,&duration ) ) )
 			{
-				throw CHILI_SOUND_API_EXCEPTION( hr,L"getting int64 out of variant property (duration)" );
+				throw My_SOUND_API_EXCEPTION( hr,L"getting int64 out of variant property (duration)" );
 			}
 
 			// calculating number of bytes for samples (duration is in units of 100ns)
@@ -534,7 +534,7 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 			(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
 			0,nullptr,&dwFlags,nullptr,&pSample ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"reading next samples" );
+			throw My_SOUND_API_EXCEPTION( hr,L"reading next samples" );
 		}
 
 		if( dwFlags & MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED )
@@ -556,14 +556,14 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 		wrl::ComPtr<IMFMediaBuffer> pBuffer;
 		if( FAILED( hr = pSample->ConvertToContiguousBuffer( &pBuffer ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"converting to contiguous buffer" );
+			throw My_SOUND_API_EXCEPTION( hr,L"converting to contiguous buffer" );
 		}
 
 		BYTE *pAudioData = nullptr;
 		DWORD cbBuffer = 0;
 		if( FAILED( hr = pBuffer->Lock( &pAudioData,nullptr,&cbBuffer ) ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"locking sample buffer" );
+			throw My_SOUND_API_EXCEPTION( hr,L"locking sample buffer" );
 		}
 
 		// Make sure not to exceed the size of the buffer
@@ -581,7 +581,7 @@ Sound Sound::LoadNonWav( const std::wstring& fileName,LoopType loopType,
 		// Unlock the buffer.
 		if( FAILED( hr = pBuffer->Unlock() ) )
 		{
-			throw CHILI_SOUND_API_EXCEPTION( hr,L"unlocking sample buffer" );
+			throw My_SOUND_API_EXCEPTION( hr,L"unlocking sample buffer" );
 		}
 	}
 
@@ -697,7 +697,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 				file.read( reinterpret_cast<char*>(fourcc),4u );
 				if( !IsFourCC( fourcc,"RIFF" ) )
 				{
-					throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"Bad fourcc code" );
+					throw My_SOUND_FILE_EXCEPTION( fileName,L"Bad fourcc code" );
 				}
 			}
 
@@ -705,7 +705,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 			fileSize += 8u; // entry doesn't include the fourcc or itself
 			if( fileSize <= 44u )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"file too small" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"file too small" );
 			}
 
 			file.seekg( 0,std::ios::beg );
@@ -715,7 +715,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 
 		if( !IsFourCC( &pFileIn[8],"WAVE" ) )
 		{
-			throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"format not WAVE" );
+			throw My_SOUND_FILE_EXCEPTION( fileName,L"format not WAVE" );
 		}
 
 		//look for 'fmt ' chunk id
@@ -736,7 +736,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 		}
 		if( !bFilledFormat )
 		{
-			throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"fmt chunk not found" );
+			throw My_SOUND_FILE_EXCEPTION( fileName,L"fmt chunk not found" );
 		}
 
 		// compare format with sound system format
@@ -745,27 +745,27 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 
 			if( format.nChannels != sysFormat.nChannels )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nChannels)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nChannels)" );
 			}
 			else if( format.wBitsPerSample != sysFormat.wBitsPerSample )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (wBitsPerSample)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (wBitsPerSample)" );
 			}
 			else if( format.nSamplesPerSec != sysFormat.nSamplesPerSec )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nSamplesPerSec)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nSamplesPerSec)" );
 			}
 			else if( format.wFormatTag != sysFormat.wFormatTag )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (wFormatTag)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (wFormatTag)" );
 			}
 			else if( format.nBlockAlign != sysFormat.nBlockAlign )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nBlockAlign)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nBlockAlign)" );
 			}
 			else if( format.nAvgBytesPerSec != sysFormat.nAvgBytesPerSec )
 			{
-				throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nAvgBytesPerSec)" );
+				throw My_SOUND_FILE_EXCEPTION( fileName,L"bad wave format (nAvgBytesPerSec)" );
 			}
 		}
 
@@ -789,7 +789,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 		}
 		if( !bFilledData )
 		{
-			throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"data chunk not found" );
+			throw My_SOUND_FILE_EXCEPTION( fileName,L"data chunk not found" );
 		}
 
 		switch( loopType )
@@ -833,7 +833,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 				}
 				if( !bFilledCue )
 				{
-					throw CHILI_SOUND_FILE_EXCEPTION( fileName,L"loop cue chunk not found" );
+					throw My_SOUND_FILE_EXCEPTION( fileName,L"loop cue chunk not found" );
 				}
 			}
 			break;
@@ -903,7 +903,7 @@ Sound::Sound( const std::wstring& fileName,LoopType loopType,
 		pData.release();
 		// needed for conversion to wide string
 		const std::string what = e.what();
-		throw CHILI_SOUND_FILE_EXCEPTION( fileName,std::wstring( what.begin(),what.end() ) );
+		throw My_SOUND_FILE_EXCEPTION( fileName,std::wstring( what.begin(),what.end() ) );
 	}
 }
 
@@ -1003,7 +1003,7 @@ Sound::~Sound()
 SoundSystem::APIException::APIException( HRESULT hr,const wchar_t * file,unsigned int line,const std::wstring & note )
 	:
 	hr( hr ),
-	ChiliException( file,line,note )
+	MyException( file,line,note )
 {}
 
 std::wstring SoundSystem::APIException::GetFullMessage() const
@@ -1033,7 +1033,7 @@ std::wstring SoundSystem::APIException::GetErrorDescription() const
 
 SoundSystem::FileException::FileException( const wchar_t* file,unsigned int line,const std::wstring& note,const std::wstring& filename )
 	:
-	ChiliException( file,line,note ),
+	MyException( file,line,note ),
 	filename( filename )
 {}
 
