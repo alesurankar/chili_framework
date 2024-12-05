@@ -1,27 +1,7 @@
-/******************************************************************************************
-*	Chili DirectX Framework Version 16.07.20											  *
-*	Graphics.cpp																		  *
-*	Copyright 2016 PlanetChili.net <http://www.planetchili.net>							  *
-*																						  *
-*	This file is part of The Chili DirectX Framework.									  *
-*																						  *
-*	The Chili DirectX Framework is free software: you can redistribute it and/or modify	  *
-*	it under the terms of the GNU General Public License as published by				  *
-*	the Free Software Foundation, either version 3 of the License, or					  *
-*	(at your option) any later version.													  *
-*																						  *
-*	The Chili DirectX Framework is distributed in the hope that it will be useful,		  *
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of						  *
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the						  *
-*	GNU General Public License for more details.										  *
-*																						  *
-*	You should have received a copy of the GNU General Public License					  *
-*	along with The Chili DirectX Framework.  If not, see <http://www.gnu.org/licenses/>.  *
-******************************************************************************************/
 #include "MainWindow.h"
 #include "Graphics.h"
 #include "DXErr.h"
-#include "ChiliException.h"
+#include "MyException.h"
 #include <assert.h>
 #include <string>
 #include <array>
@@ -36,7 +16,7 @@ namespace FramebufferShaders
 
 #pragma comment( lib,"d3d11.lib" )
 
-#define CHILI_GFX_EXCEPTION( hr,note ) Graphics::Exception( hr,note,_CRT_WIDE(__FILE__),__LINE__ )
+#define My_GFX_EXCEPTION( hr,note ) Graphics::Exception( hr,note,_CRT_WIDE(__FILE__),__LINE__ )
 
 using Microsoft::WRL::ComPtr;
 
@@ -61,7 +41,7 @@ Graphics::Graphics( HWNDKey& key )
 
 	HRESULT				hr;
 	UINT				createFlags = 0u;
-#ifdef CHILI_USE_D3D_DEBUG_LAYER
+#ifdef My_USE_D3D_DEBUG_LAYER
 #ifdef _DEBUG
 	createFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -82,7 +62,7 @@ Graphics::Graphics( HWNDKey& key )
 		nullptr,
 		&pImmediateContext ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating device and swap chain" );
+		throw My_GFX_EXCEPTION( hr,L"Creating device and swap chain" );
 	}
 
 	// get handle to backbuffer
@@ -92,7 +72,7 @@ Graphics::Graphics( HWNDKey& key )
 		__uuidof( ID3D11Texture2D ),
 		(LPVOID*)&pBackBuffer ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Getting back buffer" );
+		throw My_GFX_EXCEPTION( hr,L"Getting back buffer" );
 	}
 
 	// create a view on backbuffer that we can render to
@@ -101,7 +81,7 @@ Graphics::Graphics( HWNDKey& key )
 		nullptr,
 		&pRenderTargetView ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating render target view on backbuffer" );
+		throw My_GFX_EXCEPTION( hr,L"Creating render target view on backbuffer" );
 	}
 
 
@@ -137,7 +117,7 @@ Graphics::Graphics( HWNDKey& key )
 	// create the texture
 	if( FAILED( hr = pDevice->CreateTexture2D( &sysTexDesc,nullptr,&pSysBufferTexture ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating sysbuffer texture" );
+		throw My_GFX_EXCEPTION( hr,L"Creating sysbuffer texture" );
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -148,7 +128,7 @@ Graphics::Graphics( HWNDKey& key )
 	if( FAILED( hr = pDevice->CreateShaderResourceView( pSysBufferTexture.Get(),
 		&srvDesc,&pSysBufferTextureView ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating view on sysBuffer texture" );
+		throw My_GFX_EXCEPTION( hr,L"Creating view on sysBuffer texture" );
 	}
 
 
@@ -161,7 +141,7 @@ Graphics::Graphics( HWNDKey& key )
 		nullptr,
 		&pPixelShader ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating pixel shader" );
+		throw My_GFX_EXCEPTION( hr,L"Creating pixel shader" );
 	}
 	
 
@@ -174,7 +154,7 @@ Graphics::Graphics( HWNDKey& key )
 		nullptr,
 		&pVertexShader ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating vertex shader" );
+		throw My_GFX_EXCEPTION( hr,L"Creating vertex shader" );
 	}
 	
 
@@ -198,7 +178,7 @@ Graphics::Graphics( HWNDKey& key )
 	initData.pSysMem = vertices;
 	if( FAILED( hr = pDevice->CreateBuffer( &bd,&initData,&pVertexBuffer ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating vertex buffer" );
+		throw My_GFX_EXCEPTION( hr,L"Creating vertex buffer" );
 	}
 
 	
@@ -216,7 +196,7 @@ Graphics::Graphics( HWNDKey& key )
 		sizeof( FramebufferShaders::FramebufferVSBytecode ),
 		&pInputLayout ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating input layout" );
+		throw My_GFX_EXCEPTION( hr,L"Creating input layout" );
 	}
 
 
@@ -232,7 +212,7 @@ Graphics::Graphics( HWNDKey& key )
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	if( FAILED( hr = pDevice->CreateSamplerState( &sampDesc,&pSamplerState ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Creating sampler state" );
+		throw My_GFX_EXCEPTION( hr,L"Creating sampler state" );
 	}
 
 	// allocate memory for sysbuffer (16-byte aligned for faster access)
@@ -260,7 +240,7 @@ void Graphics::EndFrame()
 	if( FAILED( hr = pImmediateContext->Map( pSysBufferTexture.Get(),0u,
 		D3D11_MAP_WRITE_DISCARD,0u,&mappedSysBufferTexture ) ) )
 	{
-		throw CHILI_GFX_EXCEPTION( hr,L"Mapping sysbuffer" );
+		throw My_GFX_EXCEPTION( hr,L"Mapping sysbuffer" );
 	}
 	// setup parameters for copy operation
 	Color* pDst = reinterpret_cast<Color*>(mappedSysBufferTexture.pData );
@@ -292,11 +272,11 @@ void Graphics::EndFrame()
 	{
 		if( hr == DXGI_ERROR_DEVICE_REMOVED )
 		{
-			throw CHILI_GFX_EXCEPTION( pDevice->GetDeviceRemovedReason(),L"Presenting back buffer [device removed]" );
+			throw My_GFX_EXCEPTION( pDevice->GetDeviceRemovedReason(),L"Presenting back buffer [device removed]" );
 		}
 		else
 		{
-			throw CHILI_GFX_EXCEPTION( hr,L"Presenting back buffer" );
+			throw My_GFX_EXCEPTION( hr,L"Presenting back buffer" );
 		}
 	}
 }
@@ -321,7 +301,7 @@ void Graphics::PutPixel( int x,int y,Color c )
 //           Graphics Exception
 Graphics::Exception::Exception( HRESULT hr,const std::wstring& note,const wchar_t* file,unsigned int line )
 	:
-	ChiliException( file,line,note ),
+	MyException( file,line,note ),
 	hr( hr )
 {}
 
@@ -356,5 +336,5 @@ std::wstring Graphics::Exception::GetErrorDescription() const
 
 std::wstring Graphics::Exception::GetExceptionType() const
 {
-	return L"Chili Graphics Exception";
+	return L"My Graphics Exception";
 }

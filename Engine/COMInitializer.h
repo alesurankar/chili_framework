@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ChiliWin.h"
+#include "MyWin.h"
 
 class COMInitializer
 {

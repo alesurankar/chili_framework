@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "ChiliWin.h"
+#include "MyWin.h"
 #include <sal.h>
 
 #ifdef __cplusplus

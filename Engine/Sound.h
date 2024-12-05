@@ -1,31 +1,11 @@
-/****************************************************************************************** 
- *	Chili DirectX Framework Sound Pack Version 16.11.11									  *	
- *	Sound.h																				  *
- *	Copyright 2016 PlanetChili.net <http://www.planetchili.net>							  *
- *																						  *
- *	This file is part of The Chili DirectX Framework.									  *
- *																						  *
- *	The Chili DirectX Framework is free software: you can redistribute it and/or modify	  *
- *	it under the terms of the GNU General Public License as published by				  *
- *	the Free Software Foundation, either version 3 of the License, or					  *
- *	(at your option) any later version.													  *
- *																						  *
- *	The Chili DirectX Framework is distributed in the hope that it will be useful,		  *
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of						  *
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the						  *
- *	GNU General Public License for more details.										  *
- *																						  *
- *	You should have received a copy of the GNU General Public License					  *
- *	along with this source code.  If not, see <http://www.gnu.org/licenses/>.			  *
- ******************************************************************************************/
 #pragma once
-#include "ChiliWin.h"
+#include "MyWin.h"
 #include <memory>
 #include <vector>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include "ChiliException.h"
+#include "MyException.h"
 #include <wrl\client.h>
 #include "COMInitializer.h"
 
@@ -36,7 +16,7 @@ typedef tWAVEFORMATEX WAVEFORMATEX;
 class SoundSystem
 {
 public:
-	class APIException : public ChiliException
+	class APIException : public MyException
 	{
 	public:
 		APIException( HRESULT hr,const wchar_t * file,unsigned int line,const std::wstring& note );
@@ -47,7 +27,7 @@ public:
 	private:
 		HRESULT hr;
 	};
-	class FileException : public ChiliException
+	class FileException : public MyException
 	{
 	public:
 		FileException( const wchar_t* file,unsigned int line,const std::wstring& note,const std::wstring& filename );
